@@ -26,7 +26,7 @@ export default function TabLayout() {
         <NativeTabs.Trigger.Icon sf="plus.circle.fill" md="add_circle" />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="ssistant">
+      <NativeTabs.Trigger name="assistant">
         <NativeTabs.Trigger.Label>Assistant</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="brain.head.profile" md="psychology" />
       </NativeTabs.Trigger>

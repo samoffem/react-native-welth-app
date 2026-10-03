@@ -2,6 +2,7 @@ import { CodeFormValues, codeSchema, SignupFormValues, signupSchema } from '@/li
 import { useAuth, useSignUp } from '@clerk/expo'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Link, useRouter } from 'expo-router'
+import { SymbolView } from 'expo-symbols'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
@@ -12,6 +13,7 @@ const SignUp = () => {
   const {isSignedIn} = useAuth()
   const router = useRouter()
   const [email, setEmail] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const isLoading = fetchStatus === 'fetching'
 
@@ -46,7 +48,21 @@ const SignUp = () => {
       await signUp.verifications.sendEmailCode()
     }
   }
-  const onVerifyCodePress = async (data: CodeFormValues) => {
+  const onVerifyCodePress = async ({code}: {code: string}) => {
+    await signUp.verifications.verifyEmailCode({code})
+
+    if(signUp.status === "complete") {
+      await signUp.finalize({
+        navigate: ({session, decorateUrl})=>{
+          if(session?.currentTask) return;
+          const url = decorateUrl("/")
+          router.replace(url as any)
+        }
+      })
+    }else{
+      console.log("signup attempt not complete")
+    }
+
 
   }
 
@@ -244,16 +260,33 @@ const SignUp = () => {
             name='password'
             
             render={({field: {onChange, value}}) => (
-              <TextInput 
-                secureTextEntry={true}
-                placeholder='Password'
-                onChangeText={onChange}
-                value={value}
-                className="border border-[#e8e6df] mb-1 bg-white rounded-xl px-4
-                  py-3 text-[1A1D26]"
+              <View className="flex-row items-center border border-[#e8e6df] mb-1 bg-white rounded-xl">
+                <TextInput
+                  secureTextEntry={!showPassword}
+                  placeholder='Password'
+                  onChangeText={onChange}
+                  value={value}
+                  className="flex-1 py-3 pl-4 text-[1A1D26]"
                   placeholderTextColor='#A8A8D96'
                   autoCapitalize='none'
-              />
+                />
+                <TouchableOpacity
+                  className="px-4 py-3"
+                  onPress={() => setShowPassword((visible) => !visible)}
+                  accessibilityRole="button"
+                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <SymbolView
+                    name={{
+                      ios: showPassword ? 'eye.slash' : 'eye',
+                      android: showPassword ? 'visibility_off' : 'visibility',
+                      web: showPassword ? 'visibility_off' : 'visibility',
+                    }}
+                    size={20}
+                    tintColor="#7A7F8C"
+                  />
+                </TouchableOpacity>
+              </View>
             )}  
           /> 
            {
